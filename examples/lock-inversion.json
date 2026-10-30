@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "spec": {
+    "title": "Lock inversion",
+    "description": "Two workers acquire the same pair of locks in opposite orders.",
+    "repair": "Acquire both locks in the same global order in every worker."
+  },
+  "before": {
+    "scenario": "lock-inversion",
+    "fixed": false,
+    "states": 19,
+    "terminal_states": 1,
+    "exhaustive": true,
+    "violation": {
+      "kind": "deadlock",
+      "trace": [
+        {
+          "thread": 0,
+          "action": "acquire L0",
+          "pc": [
+            1,
+            0
+          ],
+          "value": 0,
+          "owners": [
+            0,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "acquire L1",
+          "pc": [
+            1,
+            1
+          ],
+          "value": 0,
+          "owners": [
+            0,
+            1
+          ]
+        }
+      ],
+      "final_value": 0
+    },
+    "verdict": "violation-found"
+  },
+  "after": {
+    "scenario": "lock-inversion",
+    "fixed": true,
+    "states": 16,
+    "terminal_states": 1,
+    "exhaustive": true,
+    "violation": null,
+    "verdict": "no-violation-in-model"
+  },
+  "replayed": true,
+  "real_threads": null,
+  "agents": [
+    {
+      "agent": "investigator",
+      "status": "disabled",
+      "summary": "Evidence-only mode; no model called."
+    },
+    {
+      "agent": "adversary",
+      "status": "disabled",
+      "summary": "Evidence-only mode; no model called."
+    },
+    {
+      "agent": "experimenter",
+      "status": "completed",
+      "summary": "Bounded model exploration and counterexample replay completed."
+    },
+    {
+      "agent": "repairer",
+      "status": "disabled",
+      "summary": "Evidence-only mode; no model called."
+    },
+    {
+      "agent": "judge",
+      "status": "disabled",
+      "summary": "Evidence-only mode; no model called."
+    }
+  ],
+  "model": null,
+  "scope": "Explicit built-in model only. No arbitrary source execution, source patching, PR review, or proof of production safety."
+}
