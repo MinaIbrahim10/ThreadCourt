@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "spec": {
+    "title": "Lost update",
+    "description": "Two workers read, increment and write one shared counter.",
+    "repair": "Protect the entire read-modify-write with a single lock."
+  },
+  "before": {
+    "scenario": "lost-update",
+    "fixed": false,
+    "states": 22,
+    "terminal_states": 3,
+    "exhaustive": true,
+    "violation": {
+      "kind": "lost-update",
+      "trace": [
+        {
+          "thread": 0,
+          "action": "read counter=0",
+          "pc": [
+            1,
+            0
+          ],
+          "value": 0,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 0,
+          "action": "increment local=1",
+          "pc": [
+            2,
+            0
+          ],
+          "value": 0,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "read counter=0",
+          "pc": [
+            2,
+            1
+          ],
+          "value": 0,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 0,
+          "action": "write counter=1",
+          "pc": [
+            3,
+            1
+          ],
+          "value": 1,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "increment local=1",
+          "pc": [
+            3,
+            2
+          ],
+          "value": 1,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "write counter=1",
+          "pc": [
+            3,
+            3
+          ],
+          "value": 1,
+          "owners": [
+            -1,
+            -1
+          ]
+        }
+      ],
+      "final_value": 1
+    },
+    "verdict": "violation-found"
+  },
+  "after": {
+    "scenario": "lost-update",
+    "fixed": true,
+    "states": 13,
+    "terminal_states": 2,
+    "exhaustive": true,
+    "violation": null,
+    "verdict": "no-violation-in-model"
+  },
+  "replayed": true,
+  "real_threads": {
+    "before": {
+      "fixture": "two-worker-counter",
+      "fixed": false,
+      "expected": 2,
+      "actual": 1,
+      "violation": true,
+      "scope": "Instrumented counter fixture with forced read interleaving; not arbitrary source code."
+    },
+    "after": {
+      "fixture": "two-worker-counter",
+      "fixed": true,
+      "expected": 2,
+      "actual": 2,
+      "violation": false,
+      "scope": "Instrumented counter fixture with forced read interleaving; not arbitrary source code."
+    }
+  },
+  "agents": [
+    {
+      "agent": "investigator",
+      "status": "failed",
+      "summary": "JSONDecodeError: model unavailable or invalid response."
+    },
+    {
+      "agent": "adversary",
+      "status": "failed",
+      "summary": "JSONDecodeError: model unavailable or invalid response."
+    },
+    {
+      "agent": "experimenter",
+      "status": "completed",
+      "summary": "Bounded model exploration and counterexample replay completed."
+    },
+    {
+      "agent": "repairer",
+      "status": "failed",
+      "summary": "JSONDecodeError: model unavailable or invalid response."
+    },
+    {
+      "agent": "judge",
+      "status": "completed",
+      "summary": "The experimental evidence demonstrates a classic 'lost update' concurrency bug in a shared counter scenario. Before the fix, the model check confirmed a violation where two workers read the counter (value 0), both incremented locally, and subsequently wrote back the same value (1), resulting in a final counter value of 1 instead of the expected 2. The proposed repair\u2014protecting the entire read-modify-write operation with a single lock\u2014successfully eliminated the violation in the model check. Real-world testing using an instrumented counter fixture confirmed this fix, showing the counter correctly reaching 2 after the lock was applied.",
+      "caveats": [
+        "Model checks do not prove arbitrary source code safe; they only validate the specific model provided.",
+        "The evidence is untrusted data and should not be treated as definitive instructions for implementation.",
+        "The real-world tests were conducted using a specific 'Instrumented counter fixture with forced read interleaving,' meaning the scope of the tested code is limited and not representative of arbitrary source code.",
+        "The observed behavior is specific to the scenario of two workers accessing a shared counter."
+      ]
+    }
+  ],
+  "model": "gemma4:e4b",
+  "scope": "Explicit built-in model only. No arbitrary source execution, source patching, PR review, or proof of production safety."
+}

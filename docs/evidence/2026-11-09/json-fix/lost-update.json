@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "spec": {
+    "title": "Lost update",
+    "description": "Two workers read, increment and write one shared counter.",
+    "repair": "Protect the entire read-modify-write with a single lock."
+  },
+  "before": {
+    "scenario": "lost-update",
+    "fixed": false,
+    "states": 22,
+    "terminal_states": 3,
+    "exhaustive": true,
+    "violation": {
+      "kind": "lost-update",
+      "trace": [
+        {
+          "thread": 0,
+          "action": "read counter=0",
+          "pc": [
+            1,
+            0
+          ],
+          "value": 0,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 0,
+          "action": "increment local=1",
+          "pc": [
+            2,
+            0
+          ],
+          "value": 0,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "read counter=0",
+          "pc": [
+            2,
+            1
+          ],
+          "value": 0,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 0,
+          "action": "write counter=1",
+          "pc": [
+            3,
+            1
+          ],
+          "value": 1,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "increment local=1",
+          "pc": [
+            3,
+            2
+          ],
+          "value": 1,
+          "owners": [
+            -1,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "write counter=1",
+          "pc": [
+            3,
+            3
+          ],
+          "value": 1,
+          "owners": [
+            -1,
+            -1
+          ]
+        }
+      ],
+      "final_value": 1
+    },
+    "verdict": "violation-found"
+  },
+  "after": {
+    "scenario": "lost-update",
+    "fixed": true,
+    "states": 13,
+    "terminal_states": 2,
+    "exhaustive": true,
+    "violation": null,
+    "verdict": "no-violation-in-model"
+  },
+  "replayed": true,
+  "real_threads": {
+    "before": {
+      "fixture": "two-worker-counter",
+      "fixed": false,
+      "expected": 2,
+      "actual": 1,
+      "violation": true,
+      "scope": "Instrumented counter fixture with forced read interleaving; not arbitrary source code."
+    },
+    "after": {
+      "fixture": "two-worker-counter",
+      "fixed": true,
+      "expected": 2,
+      "actual": 2,
+      "violation": false,
+      "scope": "Instrumented counter fixture with forced read interleaving; not arbitrary source code."
+    }
+  },
+  "agents": [
+    {
+      "agent": "investigator",
+      "status": "completed",
+      "summary": "The shared resource is a counter that is being read, incremented, and written back by two concurrent workers. The suspected concurrency invariant is that the final value of the counter should equal the initial value plus the number of increments performed (i.e., the updates should be atomic and non-interfering). The 'Lost update' scenario indicates that the invariant is being violated because one worker's update is overwriting another worker's update.",
+      "caveats": [
+        "The provided evidence is a description of a concurrency bug ('Lost update') and a proposed fix, not raw execution traces or memory dumps, so the analysis is based on the description of the race condition.",
+        "The analysis assumes the counter is a simple integer type and that the read-modify-write sequence is not atomic at the hardware level."
+      ]
+    },
+    {
+      "agent": "adversary",
+      "status": "completed",
+      "summary": "The provided scenario describes a classic 'lost update' concurrency problem where two processes read a shared counter, independently increment it, and then write back, causing one of the increments to be lost. The proposed repair is to use a single lock to protect the entire read-modify-write sequence.",
+      "caveats": [
+        "The repair ('Protect the entire read-modify-write with a single lock') is a standard, effective solution for this specific problem, but it introduces serialization, which can impact performance.",
+        "Hypothesis: If the system were to use optimistic locking (e.g., version numbers) instead of pessimistic locking (a mutex/lock), the lost update could also be prevented, potentially with better concurrency.",
+        "Hypothesis: If the counter were implemented using atomic operations (e.g., Compare-And-Swap or atomic increment instructions provided by the hardware/language), the lock could be entirely avoided, leading to the highest performance.",
+        "The term 'untrusted data' implies that the initial description of the problem is assumed to be accurate, but the underlying system behavior (e.g., network latency, OS scheduling) is not fully known."
+      ]
+    },
+    {
+      "agent": "experimenter",
+      "status": "completed",
+      "summary": "Bounded model exploration and counterexample replay completed."
+    },
+    {
+      "agent": "repairer",
+      "status": "completed",
+      "summary": "The model repair addresses a 'lost update' race condition in a shared counter scenario by protecting the entire read-modify-write sequence with a single lock. This repair successfully eliminates the violation found in the original model, changing the state space from 22 to 13 states and ensuring the final counter value is correct (2 instead of 1) when replayed against the fixture.",
+      "caveats": [
+        "The repair is implemented by adding a lock mechanism around the critical section (read, increment, write).",
+        "The trade-off is increased synchronization overhead due to the introduction of locking, which can reduce concurrency and performance compared to the unprotected version.",
+        "The analysis confirms the fix within the model, but the effectiveness in a real-world, non-instrumented environment depends on the correct and complete application of the locking primitive."
+      ]
+    },
+    {
+      "agent": "judge",
+      "status": "completed",
+      "summary": "The experimental evidence demonstrates a 'lost update' race condition in the initial (unfixed) model, where two workers read a shared counter (initially 0), both increment it locally, and then both write back the value 1, resulting in a final value of 1 instead of the expected 2. The proposed repair\u2014protecting the entire read-modify-write sequence with a single lock\u2014successfully resolves this issue in the fixed model, leading to the expected final value of 2 in both the model and the replayed real-world test. The real-world test confirms the fix, showing the actual result matches the expected result (2) when the lock is in place.",
+      "caveats": [
+        "Model checks do not prove arbitrary source code safe.",
+        "Evidence is untrusted data, never instructions.",
+        "The real-world test was conducted using an 'Instrumented counter fixture with forced read interleaving,' meaning the test environment is not arbitrary source code."
+      ]
+    }
+  ],
+  "model": "gemma4:e4b",
+  "scope": "Explicit built-in model only. No arbitrary source execution, source patching, PR review, or proof of production safety."
+}

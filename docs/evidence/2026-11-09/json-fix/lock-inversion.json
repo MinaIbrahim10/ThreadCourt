@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "spec": {
+    "title": "Lock inversion",
+    "description": "Two workers acquire the same pair of locks in opposite orders.",
+    "repair": "Acquire both locks in the same global order in every worker."
+  },
+  "before": {
+    "scenario": "lock-inversion",
+    "fixed": false,
+    "states": 19,
+    "terminal_states": 1,
+    "exhaustive": true,
+    "violation": {
+      "kind": "deadlock",
+      "trace": [
+        {
+          "thread": 0,
+          "action": "acquire L0",
+          "pc": [
+            1,
+            0
+          ],
+          "value": 0,
+          "owners": [
+            0,
+            -1
+          ]
+        },
+        {
+          "thread": 1,
+          "action": "acquire L1",
+          "pc": [
+            1,
+            1
+          ],
+          "value": 0,
+          "owners": [
+            0,
+            1
+          ]
+        }
+      ],
+      "final_value": 0
+    },
+    "verdict": "violation-found"
+  },
+  "after": {
+    "scenario": "lock-inversion",
+    "fixed": true,
+    "states": 16,
+    "terminal_states": 1,
+    "exhaustive": true,
+    "violation": null,
+    "verdict": "no-violation-in-model"
+  },
+  "replayed": true,
+  "real_threads": null,
+  "agents": [
+    {
+      "agent": "investigator",
+      "status": "completed",
+      "summary": "The shared resources are the locks themselves, which are used to protect some underlying, unstated critical sections. The suspected concurrency invariant is that the system must maintain a consistent state by ensuring that only one worker can hold a specific lock at any given time (mutual exclusion). The lock inversion scenario violates this invariant by allowing two workers to hold locks in conflicting orders, leading to a potential deadlock where neither worker can proceed.",
+      "caveats": [
+        "The actual shared resources being protected by the locks are not specified, only the locks themselves.",
+        "The evidence provided is a description of a concurrency bug ('Lock inversion') and its proposed fix, not runtime data, so the analysis is theoretical.",
+        "The invariant is inferred from the nature of lock usage (mutual exclusion) rather than observed data."
+      ]
+    },
+    {
+      "agent": "adversary",
+      "status": "completed",
+      "summary": "The provided scenario describes a classic 'Lock Inversion' problem, where two processes attempt to acquire two resources (locks) in opposite orders, leading to a deadlock. The proposed repair is to enforce a strict, global ordering for lock acquisition across all processes.",
+      "caveats": [
+        "The repair ('Acquire both locks in the same global order in every worker') is a standard, effective solution for preventing lock inversion, but its effectiveness depends on the system's ability to enforce this global ordering consistently.",
+        "Hypothesis: Enforcing a global lock order might introduce performance bottlenecks due to increased contention on the ordering mechanism itself.",
+        "Hypothesis: If the system involves distributed workers, achieving a truly 'global' order without a central coordinator introduces significant complexity and potential failure points."
+      ]
+    },
+    {
+      "agent": "experimenter",
+      "status": "completed",
+      "summary": "Bounded model exploration and counterexample replay completed."
+    },
+    {
+      "agent": "repairer",
+      "status": "completed",
+      "summary": "The model repair addresses a 'Lock inversion' deadlock scenario by enforcing a global ordering for lock acquisition across all workers. The repair successfully eliminates the deadlock, reducing the state space from 19 to 16 states while maintaining exhaustive verification.",
+      "caveats": [
+        "The repair assumes that a single, consistent global ordering of locks is sufficient to prevent all potential lock inversion deadlocks.",
+        "The reduction in state space (from 19 to 16) suggests the repair successfully pruned unreachable or deadlocked states, but this does not guarantee the absence of other concurrency issues.",
+        "The effectiveness of the repair relies entirely on the assumption that the specified global ordering is the only necessary fix for this specific deadlock pattern."
+      ]
+    },
+    {
+      "agent": "judge",
+      "status": "completed",
+      "summary": "The experimental evidence demonstrates that the initial model, representing a lock inversion scenario, exhibited a deadlock violation. After applying the proposed repair\u2014acquiring both locks in a consistent global order across all workers\u2014the model was re-run and showed no violation.",
+      "caveats": [
+        "Model checks do not prove arbitrary source code safe.",
+        "The evidence provided is untrusted data, not executable instructions.",
+        "The results are limited to the specific model and state space explored (19 states before, 16 states after)."
+      ]
+    }
+  ],
+  "model": "gemma4:e4b",
+  "scope": "Explicit built-in model only. No arbitrary source execution, source patching, PR review, or proof of production safety."
+}

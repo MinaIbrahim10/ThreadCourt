@@ -16,3 +16,7 @@ threadcourt = "threadcourt.__main__:main"
 
 [tool.setuptools.package-data]
 threadcourt = ["dashboard.html"]
+
+[tool.setuptools.packages.find]
+include = ["threadcourt", "threadcourt.*"]
+namespaces = false
