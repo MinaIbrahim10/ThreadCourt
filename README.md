@@ -4,6 +4,22 @@
 
 ThreadCourt turns a concurrency scenario into an auditable hearing: identify the shared state, propose an interleaving, explore the finite state space, replay a counterexample, and compare a repaired model. Every verdict is backed by deterministic evidence, independently of the language model.
 
+## Google Colab and UI integration tests
+
+[Open the combined Colab notebook](https://colab.research.google.com/github/MinaIbrahim10/ThreadCourt/blob/fix/ollama-colab-validation/notebooks/Colab.ipynb). Select a T4 GPU and run the cells in order. The notebook installs official Ollama, supplies the required `zstd` dependency, warms Gemma before experiments, runs both laboratories, and offers authenticated Colab dashboard links. BlackoutLab uses port 8081 because Colab occupies 8080. Download the JSON evidence before the runtime expires.
+
+Agent requests explicitly disable optional thinking so the bounded generation budget is available for the structured answer. This improves transport/JSON reliability, not factual or planning accuracy. Measured results and limitations are in [the November validation record](docs/VALIDATION_2026-11-09.md).
+
+The frontend has a DOM integration smoke test against a real Python server. It checks application behavior but does not render pixels or replace visual browser QA:
+
+```bash
+python -m pip install .
+npm install --no-audit --no-fund --prefix /tmp/lab-ui jsdom@31.0.0
+NODE_PATH=/tmp/lab-ui/node_modules node tests/ui_smoke.cjs
+```
+
+Use Node 24. The `DOM integration` GitHub Actions workflow runs this test independently of the Python suite.
+
 ## What works today
 
 - Two explicit, executable transition models: lost counter updates and lock-order inversion.
@@ -60,7 +76,7 @@ python -m threadcourt lost-update --llm --model gemma4:e2b
 
 `.env.example` documents settings; environment files are not automatically loaded. Context is limited to 4096 tokens and calls are sequential. Available RAM/VRAM, context, quantization, and Ollama offloading affect performance; full GPU residency on an 8 GB card is not guaranteed. Ollama must run on the same host or be configured at a trusted endpoint. Sending to a remote endpoint transmits the scenario and evidence there.
 
-Each agent requests schema-constrained JSON, has a 120-second HTTP timeout, and records failure without suppressing experimental results. No live Gemma inference was validated in the build environment; HTTP integration was tested using a mock service response.
+Each agent requests schema-constrained JSON, has a 120-second HTTP timeout, and records failure without suppressing experimental results. Live Gemma inference on a Colab T4 was validated on 9 November 2026; see the validation record for measured outcomes. The Python suite also tests HTTP integration with mock responses.
 
 ## Agent hearing
 

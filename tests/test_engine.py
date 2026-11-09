@@ -93,6 +93,7 @@ class EngineTests(unittest.TestCase):
             body = json.loads(request.call_args.args[0].data)
             self.assertEqual(body['model'], 'gemma4:e4b')
             self.assertFalse(body['stream'])
+            self.assertFalse(body['think'])
             self.assertEqual(result['summary'], 'ok')
 
     def test_invalid_model_json_rejected(self):
