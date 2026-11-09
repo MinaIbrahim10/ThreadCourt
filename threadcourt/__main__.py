@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--model', default=None)
     parser.add_argument('--max-states', type=int, default=10000)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--html-output', type=Path, help='Write a standalone interactive evidence viewer')
     parser.add_argument('--serve', action='store_true', help='Open the loopback-only evidence dashboard')
     parser.add_argument('--port', type=int, default=8765)
     args = parser.parse_args()
@@ -19,6 +20,9 @@ def main():
     rendered = json.dumps(report, indent=2)
     if args.output:
         args.output.write_text(rendered + '\n', encoding='utf-8')
+    if args.html_output:
+        from .dashboard import render_embedded
+        args.html_output.write_text(render_embedded(report), encoding='utf-8')
     if args.serve:
         from .dashboard import serve
         serve(report, args.port)

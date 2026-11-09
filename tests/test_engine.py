@@ -7,6 +7,18 @@ from threadcourt.agents import investigate, Ollama
 
 
 class EngineTests(unittest.TestCase):
+    def test_embedded_viewer_preserves_evidence_and_escapes_script_tags(self):
+        import re
+        from threadcourt.dashboard import render_embedded
+        report = investigate('lost-update')
+        report['agents'][0]['summary'] = '</script><script>unexpected()</script>'
+        page = render_embedded(report)
+        embedded = re.search(r'<script id="threadcourt-report" type="application/json">(.*?)</script>', page, re.S)
+        self.assertIsNotNone(embedded)
+        self.assertEqual(json.loads(embedded.group(1)), report)
+        self.assertNotIn('</script>', embedded.group(1))
+        self.assertIn('URL.createObjectURL', page)
+
     def test_counterexamples_replay(self):
         for scenario, kind in [('lost-update', 'lost-update'), ('lock-inversion', 'deadlock')]:
             with self.subTest(scenario=scenario):

@@ -8,7 +8,10 @@
 <section class="card"><small>THE PROPOSED REPAIR</small><h2 id="repair"></h2><p class="scope">Passing the repaired model establishes a result only within this explicit finite model. It does not establish that arbitrary source code is race-free.</p></section><section class="card"><h2>Agent hearing</h2><div id="agents"></div></section><p id="scope" class="scope"></p><a href="/report.json" download="threadcourt-report.json" class="good">Download evidence JSON ↗</a>
 <script>
 const el=id=>document.getElementById(id); let timer;
-fetch('/report.json').then(r=>{if(!r.ok)throw Error('Report unavailable');return r.json()}).then(r=>{
+const embedded=el('threadcourt-report');
+const report=embedded?Promise.resolve(JSON.parse(embedded.textContent)):fetch('/report.json').then(r=>{if(!r.ok)throw Error('Report unavailable');return r.json()});
+report.then(r=>{
+if(embedded){const download=document.querySelector('a[download]');download.href=URL.createObjectURL(new Blob([JSON.stringify(r,null,2)],{type:'application/json'}));}
 el('subtitle').textContent=r.spec.title+' — '+r.spec.description;
 for(const [key,prefix] of [['before','b'],['after','a']]){el(key).textContent=r[key].verdict;el(prefix+'s').textContent=r[key].states;}
 el('repair').textContent=r.spec.repair;if(r.real_threads){const p=document.createElement('p');p.className='good';p.textContent='Real Python threads confirmed: counter '+r.real_threads.before.actual+' / expected 2 → repaired '+r.real_threads.after.actual+' / expected 2';el('repair').after(p);}el('scope').textContent=r.scope;
