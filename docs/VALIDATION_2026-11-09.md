@@ -25,7 +25,7 @@ Run the DOM test using the Node 24/jsdom command in README. It is also configure
 
 ## Limits
 
-Visual browser QA remains incomplete. Both HTTP dashboards started successfully in Colab, but the cloud browser could not open the authenticated Colab port-proxy URL. DOM tests do not check layout, fonts, responsive rendering, real browser timing, or browser download behavior. No public tunnel, disabled origin check, or exposed Ollama port was used to work around that limitation.
+Initial stage only (superseded by the browser checks below): visual browser QA was incomplete. Both HTTP dashboards started successfully in Colab, but the cloud browser could not open the authenticated Colab port-proxy URL. DOM tests do not check layout, fonts, responsive rendering, real browser timing, or browser download behavior. No public tunnel, disabled origin check, or exposed Ollama port was used to work around that limitation.
 
 Raw before/after reports accompany this record under `docs/evidence/2026-11-09/`. They contain model-generated explanations and should be read alongside the deterministic evidence, not as independent proof of correctness. No independent evaluation corpus or statistical comparison was performed.
 
@@ -33,7 +33,7 @@ Raw before/after reports accompany this record under `docs/evidence/2026-11-09/`
 
 The recovery controller now returns actual post-action verification, execution errors, current evidence, and prior attempts to the single/recovery planner for up to three rounds. It stops on successful verification, inference failure, or budget exhaustion. No deterministic fallback is used. `--max-rounds 1` reproduces the previous budget. The legacy results above concern the one-shot controller and must not be presented as measurements of this revision.
 
-The new local suites passed **47 tests and 2 subtests** in total. Coverage includes correcting an incomplete plan from real feedback, enforcing the attempt budget, preserving failed outcomes, and limiting the Colab callback to approved loopback lab API requests. Live Ollama measurements of this revision are pending. ThreadCourt has an isolated embedded evidence viewer with replay and a JSON download; BlackoutLab has a notebook callback transport for its real control UI. Both are included in the reusable notebook.
+The new local suites passed **47 tests and 2 subtests** in total. Coverage includes correcting an incomplete plan from real feedback, enforcing the attempt budget, preserving failed outcomes, and limiting the Colab callback to approved loopback lab API requests. Live Ollama measurements of this revision are recorded in the following sections. ThreadCourt has an isolated embedded evidence viewer with replay and a JSON download; BlackoutLab has a notebook callback transport for its real control UI. Both are included in the reusable notebook.
 
 ### Visual browser checks inside Colab
 
