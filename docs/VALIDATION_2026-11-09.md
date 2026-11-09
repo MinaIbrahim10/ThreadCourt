@@ -15,6 +15,8 @@ The real Python counter fixture produced 1 instead of 2 before the lock and 2 af
 
 ## Tests
 
+Package discovery explicitly includes only the application package, so the Colab notebook directory is not accidentally treated as a second Python package. Both reusable notebooks also pass nbformat validation with explicit cell IDs.
+
 - Python unit/integration suite: 12/12 passed locally and in Colab. The request test checks that optional thinking is disabled.
 - DOM integration against real report servers: both scenarios loaded, range selection highlighted the expected row count, Play trace reached the final step, all five roles appeared, and the downloaded report matched the trace. No JavaScript errors were observed.
 - The reusable combined notebook's Python cells were syntax-checked. Equivalent operational commands were executed in the saved Colab validation session; a separate fresh Run all of the cleaned repository notebook was not claimed.
