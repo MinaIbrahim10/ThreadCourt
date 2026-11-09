@@ -6,7 +6,7 @@ ThreadCourt turns a concurrency scenario into an auditable hearing: identify the
 
 ## Google Colab and UI integration tests
 
-[Open the combined Colab notebook](https://colab.research.google.com/github/MinaIbrahim10/ThreadCourt/blob/fix/ollama-colab-validation/notebooks/Colab.ipynb). Select a T4 GPU and run the cells in order. The notebook installs official Ollama, supplies the required `zstd` dependency, warms Gemma before experiments, runs both laboratories, and renders both real dashboards inside the notebook. BlackoutLab uses port 8081 because Colab occupies 8080. Download the JSON evidence before the runtime expires.
+[Open the combined Colab notebook](https://colab.research.google.com/github/MinaIbrahim10/ThreadCourt/blob/main/notebooks/Colab.ipynb). Select a T4 GPU and run the cells in order. The notebook installs official Ollama, supplies the required `zstd` dependency, warms Gemma before experiments, runs both laboratories, and renders both real dashboards inside the notebook. BlackoutLab uses port 8081 because Colab occupies 8080. Download the JSON evidence before the runtime expires.
 
 Agent requests explicitly disable optional thinking so the bounded generation budget is available for the structured answer. This improves transport/JSON reliability, not factual or planning accuracy. Measured results and limitations are in [the November validation record](docs/VALIDATION_2026-11-09.md).
 
